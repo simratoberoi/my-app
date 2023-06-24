@@ -8,11 +8,11 @@ function App() {
   const [backgroundIndex, setBackgroundIndex] = useState(0);
 
   const backgroundImages = [
-    'url("my-app/src/1.jpg")',
-    'url("my-app/src/2.jpeg")',
-    'url("my-app/src/3.jpeg")',
-    'url("my-app/src/4.webp")',
-    'url("my-app/src/6.jpeg")',
+    'url("/src/1.jpg")',
+    'url("/src/2.jpeg")',
+    'url("/src/3.jpeg")',
+    'url("/src/4.webp")',
+    'url("/src/6.jpeg")',
   ];
 
   const fetchNewQuote = () => {
