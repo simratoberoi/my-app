@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import { IPInfo } from 'react-ip';
 
 function App() {
   const [quote, setQuote] = useState('');
   const [author, setAuthor] = useState('');
   const [currentTime, setCurrentTime] = useState('');
+  const [timeZone, setTimeZone] = useState('');
+  const [day, setDay] = useState('');
+  const [date, setDate] = useState('');
+  const [numDays, setNumDays] = useState('');
   const [backgroundIndex, setBackgroundIndex] = useState(0);
 
   const backgroundImages = [
-    'url("/my-app/src/images/1.jpg")',
-    'url("/my-app/src/images/2.jpeg")',
-    'url("/my-app/src/images/3.jpeg")',
-    'url("/my-app/src/images/4.webp")',
-    'url("/my-app/src/images/6.jpeg")',
+    'url("/src/1.jpg")',
+    'url("/src/2.jpeg")',
+    'url("/src/3.jpeg")',
+    'url("/src/4.webp")',
+    'url("/src/6.jpeg")',
   ];
 
   const fetchNewQuote = () => {
@@ -30,6 +35,10 @@ function App() {
       .then((data) => {
         const time = new Date(data.datetime);
         setCurrentTime(time.toLocaleTimeString());
+        setTimeZone(data.timezone);
+        setDay(data.day_of_week);
+        setDate(data.day_of_month);
+        setNumDays(data.day_of_year);
       });
   };
 
@@ -56,17 +65,28 @@ function App() {
     background: backgroundImages[backgroundIndex],
   };
 
-
-
   return (
     <div className="App" style={appStyle}>
+      <IPInfo>
+        {(ip) => (
+          <div>
             <div className="clock">
-        <h2 id="time">{currentTime}</h2>
-      </div>
-      <div className="quote">
-        <h2>{quote}</h2>
-        <small>- {author} -</small>
-      </div>
+              <h2 id="time">{currentTime}</h2>
+            </div>
+            <div className="quote">
+              <h2>{quote}</h2>
+              <small>- {author} -</small>
+            </div>
+            <div className="user-info">
+              <p>Location: {ip.city}, {ip.region}, {ip.country_name}</p>
+              <p>Time Zone: {timeZone}</p>
+              <p>Day: {day}</p>
+              <p>Date: {date}</p>
+              <p>Number of Days: {numDays}</p>
+            </div>
+          </div>
+        )}
+      </IPInfo>
     </div>
   );
 }
