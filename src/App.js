@@ -1,28 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import axios from 'axios';
 
 function App() {
   const [quote, setQuote] = useState('');
   const [author, setAuthor] = useState('');
   const [currentTime, setCurrentTime] = useState('');
   const [backgroundIndex, setBackgroundIndex] = useState(0);
-  const [locationData, setLocationData] = useState(null);
+  const [location, setLocation] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [country, setCountry] = useState('');
 
   const backgroundImages = [
-    'url("/src/1.jpg")',
-    'url("/src/2.jpeg")',
-    'url("/src/3.jpeg")',
-    'url("/src/4.webp")',
-    'url("/src/6.jpeg")',
+    'url("/images/1.jpg")',
+    'url("/images/2.jpeg")',
+    'url("/images/3.jpeg")',
+    'url("/images/6.jpeg")',
   ];
 
   const fetchNewQuote = () => {
-    axios.get('http://api.quotable.io/random')
-      .then((res) => {
-        const { content, author } = res.data;
-        setQuote(content);
-        setAuthor(author);
+    fetch('http://api.quotable.io/random')
+      .then((res) => res.json())
+      .then((data) => {
+        setQuote(data.content);
+        setAuthor(data.author);
       })
       .catch((error) => {
         console.log('Error fetching quote:', error);
@@ -34,24 +35,33 @@ function App() {
     setCurrentTime(time);
   };
 
-  const fetchLocationData = () => {
-    axios.get('https://geolocation-db.com/json/')
-      .then((res) => {
-        setLocationData(res.data);
-      })
-      .catch((error) => {
-        console.log('Error fetching location data:', error);
-      });
-  };
-
   const changeBackground = () => {
     setBackgroundIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        fetch(`https://geolocation-db.com/json/${latitude}:${longitude}`)
+          .then((response) => response.json())
+          .then((data) => {
+            setLocation(data.city);
+            setLatitude(data.latitude);
+            setLongitude(data.longitude);
+            setCountry(data.country_name);
+          })
+          .catch((error) => {
+            console.error('Error fetching location:', error);
+          });
+      });
+    }
   };
 
   useEffect(() => {
     fetchNewQuote(); // Fetch initial quote
     fetchCurrentTime(); // Set initial time
-    fetchLocationData(); // Fetch location data
+    getCurrentLocation(); // Fetch location data
 
     const quoteIntervalId = setInterval(fetchNewQuote, 600000); // Fetch new quote every 10 minutes
     const timeIntervalId = setInterval(fetchCurrentTime, 1000); // Update time every second
@@ -73,13 +83,12 @@ function App() {
       <div className="clock">
         <h2 id="time">{currentTime}</h2>
       </div>
-      {locationData && (
+      {location && (
         <div className="location">
-          <h3>Location: {locationData.city}, {locationData.country_name}</h3>
-          <p>Time Zone: {locationData.time_zone}</p>
-          <p>Number of Days: {locationData.day_of_week}</p>
-          <p>Day: {new Date().toLocaleDateString('en-US', { weekday: 'long' })}</p>
-          <p>Date: {new Date().toLocaleDateString('en-US', { dateStyle: 'full' })}</p>
+          <h3>Location: {location}</h3>
+          <p>Latitude: {latitude}</p>
+          <p>Longitude: {longitude}</p>
+          <p>Country: {country}</p>
         </div>
       )}
       <div className="quote">
