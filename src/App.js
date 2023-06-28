@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import GeolocationDB from 'geolocation-db';
+import axios from 'axios';
 
 function App() {
   const [quote, setQuote] = useState('');
@@ -18,11 +18,14 @@ function App() {
   ];
 
   const fetchNewQuote = () => {
-    fetch('http://api.quotable.io/random')
-      .then((res) => res.json())
-      .then((quote) => {
-        setQuote(quote.content);
-        setAuthor(quote.author);
+    axios.get('http://api.quotable.io/random')
+      .then((res) => {
+        const { content, author } = res.data;
+        setQuote(content);
+        setAuthor(author);
+      })
+      .catch((error) => {
+        console.log('Error fetching quote:', error);
       });
   };
 
@@ -32,9 +35,9 @@ function App() {
   };
 
   const fetchLocationData = () => {
-    GeolocationDB.get()
-      .then((response) => {
-        setLocationData(response);
+    axios.get('https://geolocation-db.com/json/')
+      .then((res) => {
+        setLocationData(res.data);
       })
       .catch((error) => {
         console.log('Error fetching location data:', error);
@@ -72,11 +75,11 @@ function App() {
       </div>
       {locationData && (
         <div className="location">
-          <h3>Location: {locationData.country_name}, {locationData.state}</h3>
+          <h3>Location: {locationData.city}, {locationData.country_name}</h3>
           <p>Time Zone: {locationData.time_zone}</p>
-          <p>Number of Days: {locationData.day_of_year}</p>
-          <p>Day: {locationData.day_of_week}</p>
-          <p>Date: {locationData.current_date}</p>
+          <p>Number of Days: {locationData.day_of_week}</p>
+          <p>Day: {new Date().toLocaleDateString('en-US', { weekday: 'long' })}</p>
+          <p>Date: {new Date().toLocaleDateString('en-US', { dateStyle: 'full' })}</p>
         </div>
       )}
       <div className="quote">
