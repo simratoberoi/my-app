@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { IPInfo } from 'react-ip';
+import GeolocationDB from 'geolocation-db';
 
 function App() {
   const [quote, setQuote] = useState('');
   const [author, setAuthor] = useState('');
   const [currentTime, setCurrentTime] = useState('');
-  const [timeZone, setTimeZone] = useState('');
-  const [day, setDay] = useState('');
-  const [date, setDate] = useState('');
-  const [numDays, setNumDays] = useState('');
   const [backgroundIndex, setBackgroundIndex] = useState(0);
+  const [locationData, setLocationData] = useState(null);
 
   const backgroundImages = [
     'url("/src/1.jpg")',
@@ -30,15 +27,17 @@ function App() {
   };
 
   const fetchCurrentTime = () => {
-    fetch('http://worldtimeapi.org/api/ip')
-      .then((res) => res.json())
-      .then((data) => {
-        const time = new Date(data.datetime);
-        setCurrentTime(time.toLocaleTimeString());
-        setTimeZone(data.timezone);
-        setDay(data.day_of_week);
-        setDate(data.day_of_month);
-        setNumDays(data.day_of_year);
+    const time = new Date().toLocaleTimeString();
+    setCurrentTime(time);
+  };
+
+  const fetchLocationData = () => {
+    GeolocationDB.get()
+      .then((response) => {
+        setLocationData(response);
+      })
+      .catch((error) => {
+        console.log('Error fetching location data:', error);
       });
   };
 
@@ -48,7 +47,8 @@ function App() {
 
   useEffect(() => {
     fetchNewQuote(); // Fetch initial quote
-    fetchCurrentTime(); // Fetch current time
+    fetchCurrentTime(); // Set initial time
+    fetchLocationData(); // Fetch location data
 
     const quoteIntervalId = setInterval(fetchNewQuote, 600000); // Fetch new quote every 10 minutes
     const timeIntervalId = setInterval(fetchCurrentTime, 1000); // Update time every second
@@ -67,26 +67,22 @@ function App() {
 
   return (
     <div className="App" style={appStyle}>
-      <IPInfo>
-        {(ip) => (
-          <div>
-            <div className="clock">
-              <h2 id="time">{currentTime}</h2>
-            </div>
-            <div className="quote">
-              <h2>{quote}</h2>
-              <small>- {author} -</small>
-            </div>
-            <div className="user-info">
-              <p>Location: {ip.city}, {ip.region}, {ip.country_name}</p>
-              <p>Time Zone: {timeZone}</p>
-              <p>Day: {day}</p>
-              <p>Date: {date}</p>
-              <p>Number of Days: {numDays}</p>
-            </div>
-          </div>
-        )}
-      </IPInfo>
+      <div className="clock">
+        <h2 id="time">{currentTime}</h2>
+      </div>
+      {locationData && (
+        <div className="location">
+          <h3>Location: {locationData.country_name}, {locationData.state}</h3>
+          <p>Time Zone: {locationData.time_zone}</p>
+          <p>Number of Days: {locationData.day_of_year}</p>
+          <p>Day: {locationData.day_of_week}</p>
+          <p>Date: {locationData.current_date}</p>
+        </div>
+      )}
+      <div className="quote">
+        <h2>{quote}</h2>
+        <small>- {author} -</small>
+      </div>
     </div>
   );
 }
